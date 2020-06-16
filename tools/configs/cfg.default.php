@@ -9,7 +9,7 @@ $CONFIG['database'] = array(
 	'port' 		=> '3306',
 	'username' 	=> 'office',
 	'password' 	=> 'officedb',
-	'database' 	=> 'zzcx_rms',
+	'database' 	=> 'webapi',
 	);
 
 //获取短信验证码间隔时间，60秒

@@ -46,7 +46,7 @@ $core->console = $cmd;
 // TODO： 1. 自动生成配置文件
 $core->loadConfig('console');
 
-$core->pushLog('URL:'.$controller.'/'.$action."\n");
+$core->pushLog('URL:'.$cmd['controller'].'/'.$cmd['action']."\n");
 $core->pushLog('METHOD:'.'console'."\n");
 
 $core->pushLog('start(url):'.microtime()."\n");

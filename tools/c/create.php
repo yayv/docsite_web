@@ -9,6 +9,11 @@ class create extends CommonController
 
 		$params = $_SERVER['argv'];
 
-		print_r($params);
+		$ret = $this->getModel('mproject')->create($params[0]);
+
+		if($ret)
+		{
+			echo $params[0],' Project created',"\n";
+		}
 	}
 }
