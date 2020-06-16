@@ -257,6 +257,16 @@ class mfile extends model
         return $this->eof;
     }
 
+    public function buildMenu($models, $apis)
+    {
+        return  ["1", '2','3'];
+    }
+
+    public function buildApis($models, $apis)
+    {
+        
+    }
+
 }
 
 

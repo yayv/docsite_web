@@ -4,6 +4,9 @@ class mproject extends model
 {
 	public function create($customer, $name, $host='',$fileHead='',$interfaceExtra='')
 	{
+		if(trim($name)=='')
+			return false;
+		
 		$sql = sprintf("select * from t_projects where name = '%s'", $name);
 
 		$ret = $this->_db->fetch_all_assoc($sql);
@@ -35,5 +38,21 @@ class mproject extends model
 		$ret = $this->_db->fetch_all_assoc($sql);
 
 		return $ret;
+	}
+
+	public function getProejctInfo($name)
+	{
+		$sql = sprintf("select * from t_project where name='%s'", $name);
+		$project = $this->_db->fetch_one_assoc($sql);
+
+		print_r($project);
+
+		$sql = sprintf("select * from t_models where projectId='%d'", $project['id']);
+		$models = $this->_db->fetch_all_assoc($sql);
+
+		$sql = sprintf("select * from t_apis where projectId='%d'", $project['id']);
+		$apis = $this->_db->fetch_all_assoc($sql);
+
+		return ['project'=>$project, 'models'=>$models, 'apis'=>$apis];
 	}
 }
