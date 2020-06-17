@@ -2,6 +2,15 @@
 
 class mproject extends model
 {
+	public function getProjectDetail($project)
+	{
+		$sql = "select * from t_projects where name='$project' ";
+
+		$ret = $this->_db->fetch_one_assoc($sql);
+		
+		return $ret;
+	}
+
 	public function create($customer, $name, $host='',$fileHead='',$interfaceExtra='')
 	{
 		if(trim($name)=='')
@@ -21,7 +30,83 @@ class mproject extends model
 		return $ret;
 	}
 
-	public function update()
+	public function update($project, $key, $value)
+	{
+		$keys = ['customer','host','fileHead','interfaceExtra'];
+		if(!in_array($key, $keys))
+		{
+			return false;
+		}
+
+		$data = [$key=>$value];
+
+        return $this->_db->update('t_projects', $data, sprintf(" name='%s' ", $project['name']));
+	}
+
+	public function saveModel($project, $model)
+	{
+		#print_r([$project,$model]);
+		$sql = sprintf("insert into t_models(`customer`,`projectId`,`code`,`name`,`extraInfo`,`lastModify`) 
+			values (
+				'%s','%s','%s','%s','%s','%s'
+			)",
+				$project['customer'],
+				$project['id'],
+				$model['code'],
+				$model['name'],
+				$model['extraInfo'],
+				$model['lastModify']
+		);
+
+		$ret = $this->_db->query($sql);
+
+		return $ret;
+	}
+
+	public function saveAPI($project, $model, $api)
+	{
+		$sql = sprintf("insert into t_apis(
+				`customer`,`projectId`,`model`,`code`,`name`,`raw`,`lastModify`) values (
+				'%s','%s','%s','%s','%s','%s','%s'
+			)",
+				$project['customer'],
+				$project['id'],
+				$model['code'],
+				$api['CODE'],
+				$api['NAME'],
+				$api['raw'],
+				$api['lastModify'],
+
+				$api['URL'],
+				$api['NOTE'],
+				$api['STATUS'],
+				$api['METHOD'],
+				$api['FORMAT'],
+				$api['REQUEST'],
+				$api['RESPONSE'],
+				$api['TODO']
+		);
+
+		$ret = $this->_db->query($sql);
+
+		return $ret;
+	}
+
+	public function cleanProject($project)
+	{
+		$projectId = $project['id'];
+
+		// delete models & apis
+		$sql = "delete from t_models where projectId='$projectId' ";
+		$this->_db->query($sql);
+
+		$sql = "delete from t_apis where projectId='$projectId'";
+		$this->_db->query($sql);
+
+		return ;
+	}
+
+	public function renameProject($project, $newName)
 	{
 
 	}
@@ -42,10 +127,8 @@ class mproject extends model
 
 	public function getProejctInfo($name)
 	{
-		$sql = sprintf("select * from t_project where name='%s'", $name);
+		$sql = sprintf("select * from t_projects where name='%s'", $name);
 		$project = $this->_db->fetch_one_assoc($sql);
-
-		print_r($project);
 
 		$sql = sprintf("select * from t_models where projectId='%d'", $project['id']);
 		$models = $this->_db->fetch_all_assoc($sql);

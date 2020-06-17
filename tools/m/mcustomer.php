@@ -4,6 +4,6 @@ class mcustomer extends model
 {
 	public function getCustomer()
 	{
-		return ['customerId'=>uniqid(), 'customerName'=>$_SERVER['USERNAME'] ];
+		return ['customerId'=>uniqid(), 'customerName'=>$_SERVER['USER'] ];
 	}
 }

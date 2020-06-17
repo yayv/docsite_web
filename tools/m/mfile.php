@@ -28,15 +28,17 @@ class mfile extends model
         $this->INFOKEYS = ["No","URL","NAME","METHOD","FORMAT","REQUEST","RESPONSE","TEST","NOTE","TODO","STATUS"];
         
         $this->arrDatas = array(
-            "NO"=>'',
+            "CODE"=>'',
             "NAME"=>'',
             "URL"=>'',
-            "REQUEST"=>"",
+            "METHOD"=>"",
             "FORMAT"=>"", // JSON/FORM
+            "REQUEST"=>"",
             "RESPONSE"=>"",
             "NOTE"=>"",
             "STATUS"=>"",
             "TODO"=>"",
+            "lastModify"=>"",
         );
 
         $this->statusStack = [];
@@ -148,12 +150,27 @@ class mfile extends model
         }
     }
 
+    public function parseModel($section)
+    {
+        return ["code"=>'test'.uniqid(),"name"=>'测试'.uniqid(),'extraInfo'=>'','lastModify'=>''];
+    }
+
+    public function parseAPI($section)
+    {
+        $api = $this->arrDatas;
+
+        $api['CODE']=uniqid();
+        $api['URL']='/asdfas/asdfasdfas';
+
+        return $api;
+    }
+
     function scanInterfaceFile($filename)
     {
         // ---------------
         $startLine = "# Interface Start";
-        $modelTitleLine = "/##[ \t]*MODEL:[ ]*(.*)/";
-        $apiTitleLine = "/###[ \t]*([a-zA-Z]*[0-9]*):[ ]*(.*)/";
+        $modelTitleLine = "/##[ \t]*([a-zA-Z]+[a-zA-Z0-9_\-]*):[ ]*(.*)/";
+        $apiTitleLine = "/###[ \t]*([a-zA-Z0-9_\-]*):[ ]*(.*)/";
         $apiBodyBorder = "/```/";
         // ---------------
 
@@ -193,8 +210,8 @@ class mfile extends model
         $t = [];
         $sectypes = [
             'startLine' => "/\#[ \t]*Interface Start/",
-            'modelTitleLine' => "/##[ \t]*MODEL:[ ]*(.*)/",
-            'apiTitleLine' => "/###[ \t]*([a-zA-Z]*[0-9]*):[ ]*(.*)/",
+            'modelTitleLine' => "/^##[ \t]*(([a-zA-Z]*[a-zA-Z0-9\-_]*):)([^ ]*)[ ]*(.*)/",
+            'apiTitleLine' => "/^###[ \t]*(([a-zA-Z]*[a-zA-Z0-9\-_]*):)[^ ]*(.*)/",
             'apiBodyBorder' => "/```/",
             'menu' =>"/##[ \t]*MENU/"
         ];
@@ -257,16 +274,54 @@ class mfile extends model
         return $this->eof;
     }
 
+    // 以下为从数据库dump成markdown文件需要用到的函数
+
     public function buildMenu($models, $apis)
     {
-        return  ["1", '2','3'];
+        #return  ["1", '2','3'];
+        $menu = [];
+        #print_r([$models, $apis]);
+        foreach($models as $k=>$v)
+        {
+            #echo $v['name'],"\n";
+            $menu[] = "*".$v['name']."*";
+            foreach($apis as $kk=>$vv)
+            {
+                #echo "\t",$vv['name'],"\n";
+                $menu[] = "- [ ]".$vv['name'];
+            }
+        }
+
+        return $menu;
     }
 
-    public function buildApis($models, $apis)
+    // 获取文本描述的 模块信息
+    public function getModelString($model)
+    {    
+        return "## ${model['code']}: ${model['name']}\n";
+    }
+
+    // 获取文本描述的 API 信息
+    public function getApiString($model, $api)
     {
-        
-    }
+        $str = "### ${model['code']}${api['code']}: ${api['name']}\n";
+        $str.= "```\n";
+        $str.= "CODE:${api['url']}\n";
+        $str.= "NAME:${api['url']}\n";
+        $str.= "NOTE:${api['response']}\n";
 
+        $str.= "URL:${api['url']}\n";
+        $str.= "METHOD:${api['method']}\n";
+        $str.= "FORMAT:${api['response']}\n";
+        
+        $str.= "REQUEST:${api['request']}\n";
+        $str.= "RESPONSE:${api['response']}\n";
+        $str.= "STATUS:${api['response']}\n";
+        $str.= "TODO:${api['response']}\n";
+        $str.= "```\n";
+
+        return $str;
+    }
 }
 
 

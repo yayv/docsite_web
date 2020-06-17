@@ -23,17 +23,35 @@ class export extends CommonController
 
 		$ret = $this->getModel('mproject')->getProejctInfo($name);
 
+		#print_r($ret);die();
+
 		echo $ret['project']['fileHead'];
 
 		$menu = $this->getModel('mfile')->buildMenu($ret['models'], $ret['apis']);
 		echo "## MENU\n";
 		foreach($menu  as $k=>$v)
 		{
-			echo '- [ ]',"\n";
+			echo $v,"\n";
 		}
 		echo "\n";
 
 		echo "# Interface Start\n";
+
+		echo $ret['project']['interfaceExtra'];
+
+		foreach($ret['models'] as $k=>$v)
+		{
+			echo $this->getModel('mfile')->getModelString($v);
+			foreach($ret['apis'] as $kk=>$vv)
+			{
+				if($vv['model']==$v['code'])
+				{
+					echo $this->getModel('mfile')->getApiString($v, $vv);
+					echo "\n";
+				}
+			}
+			echo "\n";
+		}
 
 	}
 }
