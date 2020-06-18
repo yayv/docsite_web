@@ -67,37 +67,6 @@ class import extends CommonController
         {
 	        list($section,$stat) = $this->getModel('mfile')->getNextSection();
 			
-			// Interface 段开始前，都是fileHead
-			/*
-	        {
-					// todo: update project info
-					
-					$interfaceExtra .= implode('',$section);
-					$status = 'in_body';
-	        }
-
-	        {
-	        		// 存 interfaceExtra
-	        		$interfaceExtra .= implode('',$section);
-	        }
-
-	        {
-	        		// 存 fileHead
-	        		$fileHead .= implode('',$section);
-	        }
-
-	        {
-	        		// 存 model
-	        		$this->getModel('mproject')->saveModel($project, $model, $section);
-	        }
-
-	        {
-	        		// 存 api
-	        		$api = $this->getModel('mfile')->parseApi($section);
-	        		$this->getModel('mproject')->saveAPI($project, $api, $section);
-	        }
-	        */
-
 			if($stat[0]=='startLine')
 			{
 				#$fileHead .= $section;

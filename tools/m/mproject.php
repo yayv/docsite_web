@@ -46,6 +46,8 @@ class mproject extends model
 	public function saveModel($project, $model)
 	{
 		#print_r([$project,$model]);
+		$date = trim($model['lastModify'])==''?date('Y-m-d H:i:s'):date('Y-m-d H:i:s', strtotime($model['lastModify']));
+
 		$sql = sprintf("insert into t_models(`customer`,`projectId`,`code`,`name`,`extraInfo`,`lastModify`) 
 			values (
 				'%s','%s','%s','%s','%s','%s'
@@ -55,9 +57,9 @@ class mproject extends model
 				$model['code'],
 				$model['name'],
 				$model['extraInfo'],
-				$model['lastModify']
+				$date		
 		);
-
+echo $sql,"\n";
 		$ret = $this->_db->query($sql);
 
 		return $ret;
@@ -86,7 +88,7 @@ class mproject extends model
 				$api['RESPONSE'],
 				$api['TODO']
 		);
-
+#echo $sql,"\n";
 		$ret = $this->_db->query($sql);
 
 		return $ret;
