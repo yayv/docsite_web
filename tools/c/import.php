@@ -41,11 +41,17 @@ class import extends CommonController
 			return ;
 		}
 
+		/* temp comment code
+		$ret = $this->getModel('mproject')->cleanProject($detail);
+
 		$ret = $this->fileImport($detail, $filepath);
 		if($ret)
 			echo "File Check Succeed\n";
 		else
 			echo "File Check Error\n";
+		*/
+
+		$ret = $this->importAPISection($detail);
 
 		return ;
 	}
@@ -164,9 +170,22 @@ class import extends CommonController
 	    return $ret;
 	}
 
-	private function importAPI()
+	private function importAPISection($project)
 	{
+		$result = true;
 
+		$api = $this->getModel('mproject')->getFirstApi($project);
+		$section = explode("\n",$api['raw']);
+		$ret = $this->getModel('mfile')->parseAPI($section);
+
+		while($api = $this->getModel('mproject')->getNextApi($currentApiId))
+		{
+			// parse api section 
+
+			// update api record
+		}
+
+		return $result;
 	}
 }
 

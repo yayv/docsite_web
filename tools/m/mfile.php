@@ -175,19 +175,78 @@ class mfile extends model
 
     public function parseAPI($section)
     {
-        $ret = preg_match("/^###[ \t]*([a-zA-Z]*[a-zA-Z0-9\-\_]*):(.*)/", $section[0], $matches);
-        if($ret)
+        $api = [];
+        // 1. find 1 ```
+        // 2. find 2 ```
+        $start = false;
+        $end = false;
+        foreach($section as $k=>$v)
         {
+            if(trim($v)=='```')
+            {
+                if($start)
+                    $end = $k;
+                else
+                    $start = $k;
+            }
         }
-        else
+
+        $arrDatas = array(
+            "NO"=>'',
+            "NAME"=>'',
+            "URL"=>'',
+            "REQUEST"=>"",
+            "FORMAT"=>"", // JSON/FORM
+            "RESPONSE"=>"",
+            "NOTE"=>"",
+            "STATUS"=>"",
+            "TODO"=>"",
+            "METHOD"=>"",
+            "TEST"=>""
+        );
+        $arrExtra= [];
+                // merge head
+        $api['head'] = implode('',array_slice($section, 1,$start-1));
+
+        $body = array_slice($section, $start+1,$end-$start-1);
+
+        // merge tail 
+        $api['tail'] = implode('',array_slice($section, $end+1));
+
+        foreach($body as $k=>$v)
         {
-        }
+            $ret = preg_match("/(^[ \ta-zA-Z0-9]*):(.*)/",$v, $matches);
+            if($ret)
+            {
+                $key = strtoupper(trim($matches[1]));
+                #echo $key,":",$matches[2],"\n";
+                // end last key, or start new key
+                if( array_key_exists($key, $arrDatas) )
+                {
+                    $iskey = true;
+                    $arrDatas[$key] = $matches[2];
+                }
+                else
+                {
+                    $iskey = false;
+                    $arrExtra[$key] = $matches[2];
+                }
+            }
+            else
+            {
+                // 尚未进入API, TODO 考虑追加到 head 里
+                if(!$key)
+                    $api['head'] .= $v;
 
-        $api = $this->arrDatas;
-
-        $api['CODE']=uniqid();
-        $api['URL']='/asdfas/asdfasdfas';
-
+                if($iskey)
+                    $arrDatas[$key] .= $v;
+                else
+                    $arrExtra[$key] .= $v;  
+            }
+        }        
+        
+        print_r([$arrDatas,$arrExtra]);
+        die();
         return $api;
     }
 

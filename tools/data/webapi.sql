@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.7.30, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.26, for macos10.14 (x86_64)
 --
 -- Host: localhost    Database: webapi
 -- ------------------------------------------------------
--- Server version	5.7.30-0ubuntu0.18.04.1
+-- Server version	5.7.26
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -30,18 +30,20 @@ CREATE TABLE `t_apis` (
   `code` char(100) NOT NULL,
   `name` varchar(255) NOT NULL,
   `raw` text,
-  `url` varchar(500) NOT NULL,
-  `note` text NOT NULL,
-  `status` varchar(50) NOT NULL,
-  `method` char(16) NOT NULL,
-  `format` char(32) NOT NULL,
-  `request` text NOT NULL,
-  `response` text NOT NULL,
-  `todo` text NOT NULL,
+  `head` text,
+  `tail` text,
+  `url` varchar(500) DEFAULT NULL,
+  `note` text,
+  `status` varchar(50) DEFAULT NULL,
+  `method` char(16) DEFAULT NULL,
+  `format` char(32) DEFAULT NULL,
+  `request` text,
+  `response` text,
+  `todo` text,
   `lastModify` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  UNIQUE KEY `projectId` (`projectId`,`model`,`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=459 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,14 +73,13 @@ CREATE TABLE `t_models` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `customer` char(32) NOT NULL,
   `projectId` int(11) NOT NULL,
-  `model` char(50) NOT NULL,
   `code` char(100) NOT NULL,
   `name` varchar(255) NOT NULL,
   `extraInfo` text NOT NULL COMMENT '模块内的非接口信息',
   `lastModify` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -115,7 +116,7 @@ CREATE TABLE `t_projects` (
   `createTime` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `customerId` (`customer`,`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -127,4 +128,4 @@ CREATE TABLE `t_projects` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-16  9:09:52
+-- Dump completed on 2020-06-18 20:08:18

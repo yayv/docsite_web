@@ -11,6 +11,15 @@ class mproject extends model
 		return $ret;
 	}
 
+	public function getFirstApi($project)
+	{
+		$sql = sprintf("select * from t_apis where projectId='%s' order by id asc limit 1", $project['id']);
+
+		$ret = $this->_db->fetch_one_assoc($sql);
+
+		return $ret;
+	}
+
 	public function create($customer, $name, $host='',$fileHead='',$interfaceExtra='')
 	{
 		if(trim($name)=='')
@@ -59,7 +68,7 @@ class mproject extends model
 				$model['extraInfo'],
 				$date		
 		);
-#echo $sql,"\n";
+
 		$ret = $this->_db->query($sql);
 
 		return $ret;
@@ -102,9 +111,14 @@ class mproject extends model
 		return ;
 	}
 
-	public function renameProject($project, $newName)
+	public function removeProject($project)
 	{
 
+		$sql = sprintf("delete from t_projects where name='%s'", $project['name']);
+
+		$ret = $this->_db->query($sql);
+
+		return $ret;
 	}
 
 	public function init()
