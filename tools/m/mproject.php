@@ -59,7 +59,7 @@ class mproject extends model
 				$model['extraInfo'],
 				$date		
 		);
-echo $sql,"\n";
+#echo $sql,"\n";
 		$ret = $this->_db->query($sql);
 
 		return $ret;
@@ -67,30 +67,24 @@ echo $sql,"\n";
 
 	public function saveAPI($project, $model, $api)
 	{
+		$date = trim($api['lastModify'])==''?date('Y-m-d H:i:s'):date('Y-m-d H:i:s', strtotime($api['lastModify']));
+
 		$sql = sprintf("insert into t_apis(
-				`customer`,`projectId`,`model`,`code`,`name`,`raw`,`lastModify`) values (
+				`customer`,`projectId`,`model`,`code`,`name`,`raw`,`lastModify`
+			) values(
 				'%s','%s','%s','%s','%s','%s','%s'
 			)",
 				$project['customer'],
 				$project['id'],
 				$model['code'],
-				$api['CODE'],
-				$api['NAME'],
+				$api['code'],
+				$api['name'],
 				$api['raw'],
-				$api['lastModify'],
+				date('Y-m-d H:i:s')
+			);
 
-				$api['URL'],
-				$api['NOTE'],
-				$api['STATUS'],
-				$api['METHOD'],
-				$api['FORMAT'],
-				$api['REQUEST'],
-				$api['RESPONSE'],
-				$api['TODO']
-		);
-#echo $sql,"\n";
 		$ret = $this->_db->query($sql);
-
+#echo $sql,"\n";
 		return $ret;
 	}
 

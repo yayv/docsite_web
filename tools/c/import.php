@@ -13,7 +13,7 @@ class import extends CommonController
 
 	public function index()
 	{
-		echo "倒入功能会覆盖项目现有的所有信息，是否依然继续?(Y/n)";
+		echo "导入功能会覆盖项目现有的所有信息，是否依然继续?(Y/n)";
 		$s = fgets(STDIN);
 		if(trim($s)!="Y")
 			return ;
@@ -59,7 +59,7 @@ class import extends CommonController
 		$status = 'in_head'; // in_head,in_body,in_model,in_api
 		$fileHead = '';
 		$interfaceExtra = '';
-		$model = '';
+		$model = ['code'=>'MD','name'=>'默认模块','extraInfo'=>''];
 		$extraChanged = false;
 		$tmpsec = '';
 		$ret = true ;
@@ -101,8 +101,16 @@ class import extends CommonController
 				else // in_body in_model in_api else...
 				{
 					$model = $this->getModel('mfile')->parseModel($section);
-					$this->getModel('mproject')->saveModel($project, $model);
-					$status = 'in_model';
+					if($model)
+					{
+						$model['extraInfo'] = implode('', $section);
+						$ret = $this->getModel('mproject')->saveModel($project, $model);
+						$status = 'in_model';
+					}
+					else
+					{
+						die('why?!'."\n");
+					}
 				}
 			}
 			else if($stat[0]=='apiTitleLine')
@@ -113,9 +121,23 @@ class import extends CommonController
 				}
 				else
 				{
-					$api = $this->getModel('mfile')->parseAPI($section);
-					$api['raw'] = implode('',$section);
-					$this->getModel('mproject')->saveAPI($project, $model, $api);
+					$api = $this->getModel('mfile')->parseAPILine($section);
+					
+					// fix code head
+					$p = stripos($api['code'],$model['code']);
+					if($p===0)
+						$api['code'] = substr($api['code'],strlen($model['code']));
+
+					if($api)
+					{
+						$api['raw'] = implode('',$section);
+						$ret = $this->getModel('mproject')->saveAPI($project, $model, $api);
+
+					}
+					else
+					{
+						die('why?!'."\n");	
+					}
 				}
 			}
 			else if($stat[0]=='noMatch')
@@ -142,12 +164,7 @@ class import extends CommonController
 	    return $ret;
 	}
 
-	private function modelCheck()
-	{
-
-	}
-
-	private function parseApi()
+	private function importAPI()
 	{
 
 	}

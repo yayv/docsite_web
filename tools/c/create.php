@@ -5,11 +5,15 @@ class create extends CommonController
 {
 	public function index()
 	{
-		// create a project
+		$core = Core::getInstance();
+		parent::initDb($core->getConfig('database'));
 
 		$params = $_SERVER['argv'];
 
-		$ret = $this->getModel('mproject')->create($params[0]);
+		$user = $_SERVER['USER'];
+
+		// create a project
+		$ret = $this->getModel('mproject')->create($user, $params[0]);
 
 		if($ret)
 		{

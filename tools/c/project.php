@@ -53,5 +53,10 @@ class project extends CommonController
 		else
 			echo "No Project Exist\n";
 	}
+
+	public function remove()
+	{
+		
+	}
 }
 

@@ -17,14 +17,6 @@ class mfile extends model
             'end_file'
         ];
 
-        $this->pregs = [
-            "menu"=>"/\#[ \t]*MENU.*/",
-            "model"=>"/\#\#[ \t]*MODEL.*/",
-            "api"=>"/\#\#\#[ \t]*(.*)/",
-            "body"=>"/```/",
-            "body_end"=>"/```/",
-        ];
-
         $this->INFOKEYS = ["No","URL","NAME","METHOD","FORMAT","REQUEST","RESPONSE","TEST","NOTE","TODO","STATUS"];
         
         $this->arrDatas = array(
@@ -152,57 +144,51 @@ class mfile extends model
 
     public function parseModel($section)
     {
-        return ["code"=>'test'.uniqid(),"name"=>'测试'.uniqid(),'extraInfo'=>'','lastModify'=>''];
+        $ret = preg_match("/^##[ \t]*([a-zA-Z]*[a-zA-Z0-9\-\_]*):(.*)/", $section[0], $matches);
+        if($ret)
+        {
+            // ["code"=>'test'.uniqid(),"name"=>'测试'.uniqid(),'extraInfo'=>'','lastModify'=>''];
+            $model = ['code'=>$matches[1], 'name'=>trim($matches[2]), 'lastModify'=>date('Y-m-d H:i:s')];
+        }
+        else
+        {
+            $model = false;
+        }
+
+        return $model;
+    }
+
+    public function parseAPILine($section)
+    {
+        $ret = preg_match("/^###[ \t]*([a-zA-Z]*[a-zA-Z0-9\-\_]*):(.*)/", $section[0], $matches);
+        if($ret)
+        {
+            $api = ["code"=>$matches[1],"name"=>trim($matches[2]),'lastModify'=>date('Y-m-d H:i:s')];
+        }
+        else
+        {
+            $api = false;
+        }
+        
+        return $api;
     }
 
     public function parseAPI($section)
     {
+        $ret = preg_match("/^###[ \t]*([a-zA-Z]*[a-zA-Z0-9\-\_]*):(.*)/", $section[0], $matches);
+        if($ret)
+        {
+        }
+        else
+        {
+        }
+
         $api = $this->arrDatas;
 
         $api['CODE']=uniqid();
         $api['URL']='/asdfas/asdfasdfas';
 
         return $api;
-    }
-
-    function scanInterfaceFile($filename)
-    {
-        // ---------------
-        $startLine = "# Interface Start";
-        $modelTitleLine = "/##[ \t]*([a-zA-Z]+[a-zA-Z0-9_\-]*):[ ]*(.*)/";
-        $apiTitleLine = "/###[ \t]*([a-zA-Z0-9_\-]*):[ ]*(.*)/";
-        $apiBodyBorder = "/```/";
-        // ---------------
-
-        $lines = file($filename);
-
-        $start  = false;
-        $status = 'in_file';// not_start in_file in_menu in_model in_interface in_body end_file
-        $currentAPI = '';
-        $currentNo  = '';
-        $data = array();
-        $apis = array();
-
-        $pregs = ['menu'=>"/#[ \t]*MENU/","menu_end"=>"/#/"];
-        $menu  = [];
-
-        foreach($lines as $k=>$v)
-        {
-            $ret = false;
-            foreach($this->pregs as $kk=>$vv)
-            {
-                $ret = preg_match($vv, $v, $matches);
-                if($ret)
-                {
-                    echo $vv,":\n";
-                    echo "\t",$kk,"\n";
-                }
-            }
-            if($ret)
-                echo "\n\n";
-        }
-
-        return $apis;
     }
 
     public function getSectionType($line)
@@ -288,7 +274,8 @@ class mfile extends model
             foreach($apis as $kk=>$vv)
             {
                 #echo "\t",$vv['name'],"\n";
-                $menu[] = "- [ ]".$vv['name'];
+                if($vv['model']==$v['code'])
+                $menu[] = "- [ ]".$vv['model'].$vv['code'].':'.$vv['name'];
             }
         }
 
