@@ -41,7 +41,7 @@ class import extends CommonController
 			return ;
 		}
 
-		/* temp comment code
+		//* temp comment code
 		$ret = $this->getModel('mproject')->cleanProject($detail);
 
 		$ret = $this->fileImport($detail, $filepath);
@@ -138,7 +138,6 @@ class import extends CommonController
 					{
 						$api['raw'] = implode('',$section);
 						$ret = $this->getModel('mproject')->saveAPI($project, $model, $api);
-
 					}
 					else
 					{
@@ -156,7 +155,6 @@ class import extends CommonController
 				{
 					$interfaceExtra .= implode('',$section);
 				}
-				
 			}
 			else
 			{
@@ -176,11 +174,15 @@ class import extends CommonController
 
 		$api  	 = $this->getModel('mproject')->getFirstApi($project);
 		$section = explode("\n",$api['raw']);
-		$ret  	 = $this->getModel('mfile')->parseAPI($section);
-		
+		$ret  	 = $this->getModel('mfile')->parseAPI($section);		
+
 		// update api record
-		$this->getModel('mproject')->updateAPI($project, $api['id'], $ret);
-		#print_r($this->_db->last_sql);die();
+		$ret['code']  = $api['code'];
+		$ret['model'] = $api['model'];
+		$ret['name']  = $api['name'];
+		$ret 	      = $this->getModel('mproject')->updateAPI($project, $api['id'], $ret);
+		echo sprintf("%-80s %40s\n", $section[0], $ret?'[ok]':'[fail]');
+		
 		while($api = $this->getModel('mproject')->getNextApi($project, $api['id']))
 		{
 			// parse api section 
@@ -188,7 +190,13 @@ class import extends CommonController
 			$ret  	 = $this->getModel('mfile')->parseAPI($section);
 
 			// update api record
-			$this->getModel('mproject')->updateAPI($project, $api['id'], $ret);
+			$ret['code']  = $api['code'];
+			$ret['model'] = $api['model'];
+			$ret['name']  = $api['name'];			
+			$ret = $this->getModel('mproject')->updateAPI($project, $api['id'], $ret);
+			#if(!$ret)
+			#	echo $this->_db->last_sql,"\n";
+			echo sprintf("%-80s %40s\n", $section[0], $ret?'[ok]':'[fail]');
 		}
 
 		return $result;

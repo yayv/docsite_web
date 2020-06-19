@@ -175,7 +175,6 @@ class mfile extends model
 
     public function parseAPI($section)
     {
-        $api = [];
         // 1. find 1 ```
         // 2. find 2 ```
         $start = false;
@@ -204,67 +203,84 @@ class mfile extends model
             "METHOD"=>""
         );
         $arrExtra= [];
-                // merge head
-        $api['head'] = implode('',array_slice($section, 1,$start-1));
+
+        $api =  $arrDatas ;
 
         $body = array_slice($section, $start+1,$end-$start-1);
 
+        // merge head
+        $api['head'] = implode('',array_slice($section, 1,$start-1));
+
         // merge tail 
         $api['tail'] = implode('',array_slice($section, $end+1));
-        #print_r([$api['head'],$body, $api['tail']]);die();
+        
+        if($body)
         foreach($body as $k=>$v)
         {
             $ret = preg_match("/(^[ \ta-zA-Z0-9]*):(.*)/",$v, $matches);
             if($ret)
             {
                 $key = strtoupper(trim($matches[1]));
-                #echo $key,":",$matches[2],"\n";
+                
                 // end last key, or start new key
                 if( array_key_exists($key, $arrDatas) )
                 {
                     $iskey = true;
-                    $api[$key] = $matches[2];
+                    $api[$key] = addslashes($matches[2]);
                 }
                 else
                 {
                     $iskey = false;
-                    $arrExtra[$key] = $matches[2];
+                    $arrExtra[$key] = addslashes($matches[2]);
                 }
             }
             else
             {
                 // 尚未进入API, TODO 考虑追加到 head 里
-                try
+                if(!isset($key))
+                    $api['head'] .= addslashes($v);
+                else
                 {
-                    if(!isset($key)){
-                        print_r([$body,$k,$v]);
-                    }
-
-                    if(!$key)
-                        $api['head'] .= $v;
-
-                    if($iskey)
-                        $api[$key] .= $v;
+                    if(isset($iskey) && $iskey)
+                        $api[$key] .= addslashes($v);
                     else
-                        $arrExtra[$key] .= $v;  
-                }
-                catch(Exception $e)
-                {
-                    print_r($e);
-                    print_r([$k,$v]);
+                        $arrExtra[$key] .= addslashes($v);  
                 }
             }
         }        
         
         $api['head'] = trim($api['head']);
         $api['tail'] = trim($api['tail']);
-        $api['extra'] = serialize($arrExtra);
-        #print_r($section);
-        #print_r($arrExtra);
-        #$api['']
-        #print_r([$arrDatas,$arrExtra]);
-        #die();
-        #print_r($api);die();
+        $api['extra'] = $arrExtra?serialize($arrExtra):"";
+
+        if($api['REQUEST']=='')
+        {
+            $api['REQUEST']='{}';
+            $api['isRequestJSON'] = true;
+        }
+        else
+        {
+            $t = json_decode($ret['RESPONSE']);
+            if(json_last_error()!='No Error')
+                $api['isResponseJSON'] = false;
+            else
+                $api['isResponseJSON'] = true;            
+        }
+
+        if($api['RESPONSE']=='')
+        {
+            $api['RESPONSE']='{}';
+            $api['isResponseJSON'] = true;
+        }
+        else
+        {
+            $t = json_decode($ret['REQUEST']);
+            if(json_last_error()!='No Error')
+                $api['isRequestJSON'] = false;
+            else
+                $api['isRequestJSON'] = true;
+        }
+
         return $api;
     }
 
@@ -380,13 +396,19 @@ class mfile extends model
         $str.= "FORMAT:${api['format']}\n";
         
         $str.= "REQUEST:\n";
-        $str.= json_encode(json_decode($api['request']), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+        if($api['request']==false || $api['request']=='') 
+            $str.='{}';
+        else
+            $str.= stripslashes(json_encode(json_decode($api['request']), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
         $str.= "\n";
 
         $str.= "RESPONSE:\n";
-        $str.= json_encode(json_decode($api['response']), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+        if($api['response']==false || $api['response']=='') 
+            $str.='{}';
+        else
+            $str.= stripslashes(json_encode(json_decode($api['response']), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
         $str.= "\n";
-        
+
         $str.= "STATUS:${api['status']}\n";
         $str.= "TODO:${api['todo']}\n";
 

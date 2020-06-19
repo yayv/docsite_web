@@ -63,7 +63,13 @@ class mproject extends model
 
 	public function updateAPI($project, $id, $api)
 	{
-		$this->_db->update('t_apis', $api, sprintf(" projectId='%d' and id=%d",$project['id'],$id));
+		$ret = $this->_db->update('t_apis', $api, sprintf(" projectId='%d' and id=%d",$project['id'],$id));
+		if(!$ret)
+		{
+			echo 'KKK:';
+			die($this->_db->last_sql);
+		}
+		return $ret;
 	}
 
 	public function saveModel($project, $model)
