@@ -192,7 +192,7 @@ class mfile extends model
         }
 
         $arrDatas = array(
-            "NO"=>'',
+            "CODE"=>'',
             "NAME"=>'',
             "URL"=>'',
             "REQUEST"=>"",
@@ -201,8 +201,7 @@ class mfile extends model
             "NOTE"=>"",
             "STATUS"=>"",
             "TODO"=>"",
-            "METHOD"=>"",
-            "TEST"=>""
+            "METHOD"=>""
         );
         $arrExtra= [];
                 // merge head
@@ -212,7 +211,7 @@ class mfile extends model
 
         // merge tail 
         $api['tail'] = implode('',array_slice($section, $end+1));
-
+        #print_r([$api['head'],$body, $api['tail']]);die();
         foreach($body as $k=>$v)
         {
             $ret = preg_match("/(^[ \ta-zA-Z0-9]*):(.*)/",$v, $matches);
@@ -224,7 +223,7 @@ class mfile extends model
                 if( array_key_exists($key, $arrDatas) )
                 {
                     $iskey = true;
-                    $arrDatas[$key] = $matches[2];
+                    $api[$key] = $matches[2];
                 }
                 else
                 {
@@ -235,18 +234,37 @@ class mfile extends model
             else
             {
                 // 尚未进入API, TODO 考虑追加到 head 里
-                if(!$key)
-                    $api['head'] .= $v;
+                try
+                {
+                    if(!isset($key)){
+                        print_r([$body,$k,$v]);
+                    }
 
-                if($iskey)
-                    $arrDatas[$key] .= $v;
-                else
-                    $arrExtra[$key] .= $v;  
+                    if(!$key)
+                        $api['head'] .= $v;
+
+                    if($iskey)
+                        $api[$key] .= $v;
+                    else
+                        $arrExtra[$key] .= $v;  
+                }
+                catch(Exception $e)
+                {
+                    print_r($e);
+                    print_r([$k,$v]);
+                }
             }
         }        
         
-        print_r([$arrDatas,$arrExtra]);
-        die();
+        $api['head'] = trim($api['head']);
+        $api['tail'] = trim($api['tail']);
+        $api['extra'] = serialize($arrExtra);
+        #print_r($section);
+        #print_r($arrExtra);
+        #$api['']
+        #print_r([$arrDatas,$arrExtra]);
+        #die();
+        #print_r($api);die();
         return $api;
     }
 
@@ -351,20 +369,35 @@ class mfile extends model
     public function getApiString($model, $api)
     {
         $str = "### ${model['code']}${api['code']}: ${api['name']}\n";
+        $str.= $api['head'];
         $str.= "```\n";
-        $str.= "CODE:${api['url']}\n";
-        $str.= "NAME:${api['url']}\n";
-        $str.= "NOTE:${api['response']}\n";
+        $str.= "CODE:${api['code']}\n";
+        $str.= "NAME:${api['name']}\n";
+        $str.= "NOTE:${api['note']}\n";
 
         $str.= "URL:${api['url']}\n";
         $str.= "METHOD:${api['method']}\n";
-        $str.= "FORMAT:${api['response']}\n";
+        $str.= "FORMAT:${api['format']}\n";
         
-        $str.= "REQUEST:${api['request']}\n";
-        $str.= "RESPONSE:${api['response']}\n";
-        $str.= "STATUS:${api['response']}\n";
-        $str.= "TODO:${api['response']}\n";
+        $str.= "REQUEST:\n";
+        $str.= json_encode(json_decode($api['request']), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+        $str.= "\n";
+
+        $str.= "RESPONSE:\n";
+        $str.= json_encode(json_decode($api['response']), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+        $str.= "\n";
+        
+        $str.= "STATUS:${api['status']}\n";
+        $str.= "TODO:${api['todo']}\n";
+
+        $extra = unserialize($api['extra']);
+        if($extra && is_array($extra))
+        foreach($extra as $k=>$v)
+        {
+            $str .= $k.":".$v."\n";
+        }
         $str.= "```\n";
+        $str.= $api['tail'];
 
         return $str;
     }

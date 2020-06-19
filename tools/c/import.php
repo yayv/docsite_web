@@ -49,7 +49,7 @@ class import extends CommonController
 			echo "File Check Succeed\n";
 		else
 			echo "File Check Error\n";
-		*/
+		//*/
 
 		$ret = $this->importAPISection($detail);
 
@@ -174,15 +174,21 @@ class import extends CommonController
 	{
 		$result = true;
 
-		$api = $this->getModel('mproject')->getFirstApi($project);
+		$api  	 = $this->getModel('mproject')->getFirstApi($project);
 		$section = explode("\n",$api['raw']);
-		$ret = $this->getModel('mfile')->parseAPI($section);
-
-		while($api = $this->getModel('mproject')->getNextApi($currentApiId))
+		$ret  	 = $this->getModel('mfile')->parseAPI($section);
+		
+		// update api record
+		$this->getModel('mproject')->updateAPI($project, $api['id'], $ret);
+		#print_r($this->_db->last_sql);die();
+		while($api = $this->getModel('mproject')->getNextApi($project, $api['id']))
 		{
 			// parse api section 
+			$section = explode("\n",$api['raw']);
+			$ret  	 = $this->getModel('mfile')->parseAPI($section);
 
 			// update api record
+			$this->getModel('mproject')->updateAPI($project, $api['id'], $ret);
 		}
 
 		return $result;

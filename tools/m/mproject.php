@@ -13,7 +13,16 @@ class mproject extends model
 
 	public function getFirstApi($project)
 	{
-		$sql = sprintf("select * from t_apis where projectId='%s' order by id asc limit 1", $project['id']);
+		$sql = sprintf("select * from t_apis where projectId='%d' order by id asc limit 1", $project['id']);
+
+		$ret = $this->_db->fetch_one_assoc($sql);
+
+		return $ret;
+	}
+
+	public function getNextApi($project, $currentId)
+	{
+		$sql = sprintf("select * from t_apis where projectId='%d' and id>'%d' order by id asc limit 1", $project['id'], $currentId);
 
 		$ret = $this->_db->fetch_one_assoc($sql);
 
@@ -50,6 +59,11 @@ class mproject extends model
 		$data = [$key=>$value];
 
         return $this->_db->update('t_projects', $data, sprintf(" name='%s' ", $project['name']));
+	}
+
+	public function updateAPI($project, $id, $api)
+	{
+		$this->_db->update('t_apis', $api, sprintf(" projectId='%d' and id=%d",$project['id'],$id));
 	}
 
 	public function saveModel($project, $model)
