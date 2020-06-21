@@ -137,6 +137,7 @@ class import extends CommonController
 					if($api)
 					{
 						$api['raw'] = implode('',$section);
+						
 						$ret = $this->getModel('mproject')->saveAPI($project, $model, $api);
 					}
 					else
@@ -186,13 +187,13 @@ class import extends CommonController
 		while($api = $this->getModel('mproject')->getNextApi($project, $api['id']))
 		{
 			// parse api section 
-			$section = explode("\n",$api['raw']);
+			$section = explode("\n", stripslashes($api['raw']));
 			$ret  	 = $this->getModel('mfile')->parseAPI($section);
 
 			// update api record
 			$ret['code']  = $api['code'];
 			$ret['model'] = $api['model'];
-			$ret['name']  = $api['name'];			
+			$ret['name']  = $api['name'];
 			$ret = $this->getModel('mproject')->updateAPI($project, $api['id'], $ret);
 			#if(!$ret)
 			#	echo $this->_db->last_sql,"\n";

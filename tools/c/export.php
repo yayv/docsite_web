@@ -23,7 +23,7 @@ class export extends CommonController
 
 		$ret = $this->getModel('mproject')->getProejctInfo($name);
 
-		#print_r($ret);die();
+		#print_r(array_keys($ret));die();
 
 		echo $ret['project']['fileHead'];
 

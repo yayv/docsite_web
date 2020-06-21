@@ -163,7 +163,7 @@ class mfile extends model
         $ret = preg_match("/^###[ \t]*([a-zA-Z]*[a-zA-Z0-9\-\_]*):(.*)/", $section[0], $matches);
         if($ret)
         {
-            $api = ["code"=>$matches[1],"name"=>trim($matches[2]),'lastModify'=>date('Y-m-d H:i:s')];
+            $api= ["code"=>$matches[1],"name"=>trim($matches[2]),'lastModify'=>date('Y-m-d H:i:s')];
         }
         else
         {
@@ -209,11 +209,11 @@ class mfile extends model
         $body = array_slice($section, $start+1,$end-$start-1);
 
         // merge head
-        $api['head'] = implode('',array_slice($section, 1,$start-1));
+        $api['head'] = implode("\n",array_slice($section, 1,$start-1));
 
         // merge tail 
-        $api['tail'] = implode('',array_slice($section, $end+1));
-        
+        $api['tail'] = implode("\n",array_slice($section, $end+1));
+       
         if($body)
         foreach($body as $k=>$v)
         {
@@ -260,11 +260,21 @@ class mfile extends model
         }
         else
         {
-            $t = json_decode($ret['RESPONSE']);
-            if(json_last_error()!='No Error')
-                $api['isResponseJSON'] = false;
+            $t = json_decode(stripslashes($api['REQUEST']));
+            $e = json_last_error_msg();
+            #print_r(stripslashes($api['REQUEST']));
+            #print_r(json_decode(stripslashes($api['REQUEST'])));
+            
+            #print_r($e);
+            #die($api['REQUEST']);
+            #echo "kkk:";
+            #print_r($api);
+            #print_r($e);
+            #die($e);
+            if($e=='No error')
+                $api['isRequestJSON'] = true;            
             else
-                $api['isResponseJSON'] = true;            
+                $api['isRequestJSON'] = false;
         }
 
         if($api['RESPONSE']=='')
@@ -274,11 +284,13 @@ class mfile extends model
         }
         else
         {
-            $t = json_decode($ret['REQUEST']);
-            if(json_last_error()!='No Error')
-                $api['isRequestJSON'] = false;
+            $t = json_decode(stripslashes($api['REQUEST']));
+            $e = json_last_error_msg();
+
+            if($e=='No error')
+                $api['isResponseJSON'] = true;
             else
-                $api['isRequestJSON'] = true;
+                $api['isResponseJSON'] = false;
         }
 
         return $api;
@@ -368,7 +380,16 @@ class mfile extends model
             {
                 #echo "\t",$vv['name'],"\n";
                 if($vv['model']==$v['code'])
-                $menu[] = "- [ ]".$vv['model'].$vv['code'].':'.$vv['name'];
+                {
+                    $line = "- [ ]".$vv['model'].$vv['code'].':'.$vv['name'];    
+                    if(!$vv['isRequestJSON'] || !$vv['isResponseJSON'])
+                    {
+                        $line .= "#";
+                        $line .= $vv['isRequestJSON']?'':' REQUEST FORMAT ERROR.';
+                        $line .= $vv['isResponseJSON']?'':' RESPONSE FORMAT ERROR.';
+                    }
+                    $menu[] = $line;
+                }
             }
         }
 
@@ -385,7 +406,7 @@ class mfile extends model
     public function getApiString($model, $api)
     {
         $str = "### ${model['code']}${api['code']}: ${api['name']}\n";
-        $str.= $api['head'];
+        $str.= $api['head']."\n";
         $str.= "```\n";
         $str.= "CODE:${api['code']}\n";
         $str.= "NAME:${api['name']}\n";
@@ -419,7 +440,7 @@ class mfile extends model
             $str .= $k.":".$v."\n";
         }
         $str.= "```\n";
-        $str.= $api['tail'];
+        $str.= $api['tail']."\n";
 
         return $str;
     }
