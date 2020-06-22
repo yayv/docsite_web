@@ -262,15 +262,7 @@ class mfile extends model
         {
             $t = json_decode(stripslashes($api['REQUEST']));
             $e = json_last_error_msg();
-            #print_r(stripslashes($api['REQUEST']));
-            #print_r(json_decode(stripslashes($api['REQUEST'])));
-            
-            #print_r($e);
-            #die($api['REQUEST']);
-            #echo "kkk:";
-            #print_r($api);
-            #print_r($e);
-            #die($e);
+
             if($e=='No error')
                 $api['isRequestJSON'] = true;            
             else
@@ -284,7 +276,7 @@ class mfile extends model
         }
         else
         {
-            $t = json_decode(stripslashes($api['REQUEST']));
+            $t = json_decode(stripslashes($api['RESPONSE']));
             $e = json_last_error_msg();
 
             if($e=='No error')
@@ -432,7 +424,13 @@ class mfile extends model
 
         $str.= "STATUS:${api['status']}\n";
         $str.= "TODO:${api['todo']}\n";
-
+/*
+        if($api['code']=='4' && $api['model']=='U')
+        {
+            print_r($api);
+            die();
+        }
+*/
         $extra = unserialize($api['extra']);
         if($extra && is_array($extra))
         foreach($extra as $k=>$v)
