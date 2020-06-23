@@ -374,12 +374,13 @@ class mfile extends model
                 if($vv['model']==$v['code'])
                 {
                     $line = "- [ ]".$vv['model'].$vv['code'].':'.$vv['name'];    
+                    $line .= "\t#";                    
                     if(!$vv['isRequestJSON'] || !$vv['isResponseJSON'])
                     {
-                        $line .= "#";
                         $line .= $vv['isRequestJSON']?'':' REQUEST FORMAT ERROR.';
                         $line .= $vv['isResponseJSON']?'':' RESPONSE FORMAT ERROR.';
                     }
+                    $line.= $vv['status'];
                     $menu[] = $line;
                 }
             }
@@ -409,17 +410,20 @@ class mfile extends model
         $str.= "FORMAT:${api['format']}\n";
         
         $str.= "REQUEST:\n";
-        if($api['request']==false || $api['request']=='') 
-            $str.='{}';
-        else
+        if($api['isRequestJSON'])
+        {
             $str.= stripslashes(json_encode(json_decode($api['request']), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+        }
+        else
+            $str.= stripslashes($api['request']);
+            
         $str.= "\n";
 
         $str.= "RESPONSE:\n";
-        if($api['response']==false || $api['response']=='') 
-            $str.='{}';
-        else
+        if($api['isResponseJSON'])
             $str.= stripslashes(json_encode(json_decode($api['response']), JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+        else
+            $str.=stripslashes($api['response']);
         $str.= "\n";
 
         $str.= "STATUS:${api['status']}\n";
