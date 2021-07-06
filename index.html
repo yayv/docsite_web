@@ -1,1 +1,160 @@
-Hello, World!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="apple-touch-icon" sizes="180x180" href="/style/red/fav.png" />
+<!-- 用户能够添加web应用程序或网页链接到主屏幕图标 iOS -->
+<link rel="icon" type="image/png" href="/style/red/fav.png" sizes="32x32" />
+<!-- Chrome for Mac只会使用32×32大小的ICO格式, ie9 “新建选项卡”页 (32x32) 任务栏按钮 (32x32)-->
+<link rel="icon" type="image/png" href="/style/red/fav.png" sizes="16x16" />
+<!--  Firefox和Safari会使用最后声明的那个,Standard size for browsers , ie9 地址栏 (16x16)-->
+<link rel="mask-icon" href="/style/red/fav.png" color="#5bbad5" />
+<title> </title>
+
+<script src="../libs/vue-2.6.10.js"></script>
+<script src="../libs/vue-router-3.0.2.js"></script>
+<link href="../libs/eui-2.13.2.css" rel="stylesheet">
+<!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+<script src="../libs/eui-2.13.2.js"></script>
+<script src="../libs/utils.js?v=0509"></script>
+
+<script src="/script/services.js"></script>
+<script src="/script/config.js"></script>
+<link rel="stylesheet" href="/style/ent.css">
+<link rel="stylesheet" href="/style/red/red.css">
+<style>
+.crs-login{
+	background-color: #fff;
+	width:320px;
+	height:460px;
+	padding:100px 50px 0 430px;
+	border-radius: 12px;
+	box-shadow: 2px 2px 2px #fff,-2px -2px 2px #fff;
+	position: absolute;
+	left:50%;
+	top:50%;
+	margin:-280px 0 0 -400px;
+}
+</style>
+
+<!-- <link rel="stylesheet" href="./red/zx.css"> -->
+
+</head>
+<body>
+<style>
+html, body,
+.crs-login-main{
+	margin:0;
+	padding:0;
+	width: 100%;
+	height: 100%;
+	/* background-image: url(./images/login1.jpg); */
+	background-size: 100% 100%;
+	overflow: hidden;
+}
+
+
+.crs-login p{
+	margin:0;
+}
+
+footer{
+	position: absolute;
+	right:5px;
+	bottom:-40px;
+	color:#fff;
+}
+</style>
+<div id="login" class="crs-login-main" :style="{'backgroundImage': 'url(/style/red/bg.jpg)'}">
+<div v-if="isShowChromeTip" style="width:100%;height: 100%;background: rgba(201, 204, 206, .4);position: absolute;top:0px;padding-top:100px;color: white;font-size: 15px;text-align:center">您好，当前浏览器不支持系统 请【<a href="https://www.google.cn/intl/zh-CN/chrome/" target="_blank" style="color:yellow;"> 下载 Chrome 浏览器</a>并安装使用】</div>
+<div class="crs-login logon_1" :style="{'backgroundImage': 'url(/style/red/login.jpg)',backgroundRepeat:'no-repeat',backgroundPosition:'center'}">
+	<div class="crs-login-header">
+		<h1 class="login_h1" :style="{'backgroundImage': 'url(/style/red/logo.jpg)',backgroundRepeat:'no-repeat',backgroundPosition:'0 0'}">WEBAPI</h1>
+  	</div>
+	<el-form :model="userInfo" :rules="rules" ref="login">
+		<el-form-item prop="username">
+			<el-input v-model="userInfo.username" placeholder="管理员账号"></el-input>
+		</el-form-item>
+
+		<div style="height:10px;"></div>
+
+		<el-form-item prop="password">
+			<el-input v-model="userInfo.password" type="password" placeholder="密码"></el-input>
+		</el-form-item>
+		<el-form-item>
+			<el-alert type='warning' v-if=" message != '' ">{{ message }}</el-alert>
+		</el-form-item>
+		<div class="crs-login-btn">
+			<el-button class="denglu" type="primary" v-on:click="login('login')"  style="border:1px solid #fff">登录</el-button>
+			<br><br><br><br><br>
+		</div>
+	</el-form>
+	<footer> WEBAPI And API Documents</footer>
+	<!-- <div class="browser" style="position:absolute;line-height:2;padding:80px 100px;left:324px;top:220px;background:#fff;display:none;" id="browser">
+		您好，当前浏览器不支持系统， <br>
+		请 <a href="https://www.google.cn/intl/zh-CN/chrome/" target="_blank"> 下载 Chrome 浏览器</a>并安装使用
+	</div>	 -->
+</div>
+</div>
+<script>
+var app = new Vue({
+	el: "#login",
+	data: {
+		company: {
+			code: '',
+			fullname: '',
+			name: '',
+			title:'',
+			wallImage:'',
+			loginImage:'',
+			logo:'',
+			fullname1: '',
+		},
+		userInfo: {
+			id: '',
+			username: "",
+			password: ""
+		},
+		rules: {
+			username: Validators.username,
+			password: Validators.password
+		},
+		message:""
+	},
+	computed: {
+		isShowChromeTip() {
+		const USER_AGENT = navigator.userAgent.toLowerCase()
+		const isChrome = /.*(chrome)\/([\w.]+).*/
+		return !isChrome.test(USER_AGENT)
+		}
+    },
+	methods: {
+		login: function(formName){
+			var _this = this;
+
+			this.$refs[formName].validate((valid) => {
+	        	if (!valid) {
+	        		console.log('error submit!!');
+					return;
+	        	}
+
+				var Account = window.Services.Account;
+				Account.login(function(data){
+					console.log('login');
+					console.log(data)
+					var userInfo = {
+						id: data.userId,
+						userId: data.userId,
+						name: data.realname,
+					};
+
+					location.href = location.href.replace("/index.html", "/main.html");
+				}, _this.userInfo);
+	        });
+		}
+	}
+});
+</script>
+
+</body>
+</html>

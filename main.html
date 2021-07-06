@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="apple-touch-icon" sizes="180x180" href="/style/red/fav.png" />
+<!-- 用户能够添加web应用程序或网页链接到主屏幕图标 iOS -->
+<link rel="icon" type="image/png" href="/style/red/fav.png" sizes="32x32" />
+<!-- Chrome for Mac只会使用32×32大小的ICO格式, ie9 “新建选项卡”页 (32x32) 任务栏按钮 (32x32)-->
+<link rel="icon" type="image/png" href="/style/red/fav.png" sizes="16x16" />
+<!--  Firefox和Safari会使用最后声明的那个,Standard size for browsers , ie9 地址栏 (16x16)-->
+<link rel="mask-icon" href="/style/red/fav.png" color="#5bbad5" />
+<title> </title>
+<style>
+.transition-box{
+	margin-bottom: 10px;
+    width: 100%;
+    height: 55px;
+    border-radius: 4px;
+    background-color: rgb(236, 241, 246);
+    /* text-align: center; */
+    color: #fff;
+    padding: 8px 5px;
+    box-sizing: border-box;
+    margin-right: 20px;
+    cursor: pointer;
+}
+.transition-box h5{
+    padding:0;
+    margin:0;
+    font-size:13px;
+    margin-bottom:5px;
+    color:#333
+}
+.transition-box p{
+    text-indent:10px;
+    padding:0;
+    margin:0;
+    font-size: 12px;
+    color:#333;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
+}
+
+</style>
+
+<script src="/libs/vue-2.6.10.js"></script>
+<script src="/libs/vue-router-3.0.2.js"></script>
+<link href="/libs/eui-2.13.2.css" rel="stylesheet">
+<!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+<script src="/libs/jquery-1.11.3.js"></script>
+<script src="/libs/eui-2.13.2.js"></script>
+<script src="/libs/underscore-1.8.3.js"></script>
+<script src="/libs/html2canvas.min.js"></script>
+<script src="/libs/utils.js?v=0509"></script>
+
+
+<script src="/libs/qrcode.js"></script>
+<script src="/libs/utils.js"></script>
+<script src="/script/services.js"></script>
+<script src="/script/config.js"></script>
+
+<link href="/style/red/ent.css" rel="stylesheet">
+<link rel="stylesheet" href="/style/red/red.css">
+<script>
+var Pages = {
+    cars: {},
+    rent: {},
+    setting: {},
+    reports: {},
+    //finance: {},
+    cs: {},
+    longRent: {},
+    chartered:{},
+    system: {},
+    carmt: {},
+    financialManage:{},
+};
+</script>
+
+<!-- service data -->
+<script src="/script/services.js"></script>
+<script src="/script/mixins.js"></script>
+
+<!-- pages，vue component -->
+<script>
+function(){
+  document.write("<div></div>")
+}();
+const routerConfig = {
+    routes: [
+        {
+            name: 'index',
+            path: '/',
+            redirect: { name: 'help' },
+            title: '默认首页',
+            component: window.Pages.cars
+        },{
+            name: 'cars.setting',
+            redirect: { name: 'setting.rent' },
+            path: '/setting.rent',
+            title: '门店服务',
+            component: window.Pages.setting.rent
+        }
+    ]
+};
+
+
+const router = new VueRouter(routerConfig);
+router.beforeEach((to, from, next) => {
+    var newPage = to.name;
+    if(!newPage) newPage='cars.list'
+    loadComponent(newPage);
+    next();
+
+    function loadComponent(newPage){
+        var newPages = newPage.split('.');
+        var Page = window.Pages;
+        for(var i=0;i<newPages.length;i++){
+            Page = Page[newPages[i]];
+        }
+
+        var mixins = Page['mixins'] || [];
+
+        var minxis2 = [ window.CRS.ListMixin, window.CRS.payMixin ];
+        Page['mixins'] = mixins.concat(minxis2);
+        // Page['props'] = (route) => ({ query: route.query.type });
+
+        if(!Page.loaded && Page.type != 'content'){
+            var payTPL = CRS.getTemplate('payMixin', window.CRS.payMixin.template);
+            Page.template = '<div>' + CRS.getTemplate(newPage, Page.template) + payTPL + '</div>';
+            Page.loaded = true;
+        }
+    }
+});
+</script>
+</head>
+<body>
+<div class="crs-app" id="app" v-cloak>
+	<div class="crs-header" >
+		<div class="crs-login-user">
+            <el-dialog :close-on-click-modal="false" title="修改密码" :visible.sync="passwords.show" width="350px">
+            	<el-form :model="passwords.model" :rules="passwords.rules" ref="updatePasswordForm" style="padding-right:50px;">
+            		<el-form-item prop="oldPassword">
+            			<el-input v-model="passwords.model.oldPassword" type="password" placeholder="旧密码"></el-input>
+            		</el-form-item>
+
+            		<el-form-item prop="newPassword">
+            			<el-input v-model="passwords.model.newPassword" type="password" placeholder="新密码"></el-input>
+            		</el-form-item>
+            		<div class="crs-login-btn">
+            			<el-button type="primary" v-on:click="updatePassword('updatePasswordForm')">修改密码</el-button>
+            		</div>
+            	</el-form>
+            </el-dialog>
+	        <el-popover placement="bottom-start" width="200">
+                <div>
+                    <p>{{ user.name }}</p>
+                    <el-button type="text" size="small" @click="updatePasswordPop('updatePasswordForm')">修改密码</el-button>
+                    <el-button type="text" size="small" @click="logout">退出</el-button>
+                </div>
+                <span slot="reference" id="button" style="cursor: pointer;">当前登录：<a>{{ user.name }}</a></span>
+            </el-popover>
+		    
+	        <!-- <el-popover placement="bottom-start"> -->
+                <!-- <div style="padding:10px 0"> -->
+                    <!-- <el-badge :value="3" :max="99" class="item" style="margin-left:2px">
+                        <el-button size="small">订单通知</el-button>
+                    </el-badge> -->
+                    <!-- <el-badge :value="num" :max="99" class="item" style="margin:0 1em">
+                        <el-button size="small" @click="show = !show">系统消息</el-button>
+                    </el-badge>
+                </div> -->
+                <!-- <el-collapse accordion @change="messageClean">
+                    <el-collapse-item v-for="msg in messages" :key="msg.id" :title="msg.sentTime" :name="msg.id">
+                        <div>
+                            {{ msg.content }} <a v-if="msg.url" target="_blank" :href="msg.url">详情</a>
+                        </div>
+                    </el-collapse-item>
+                </el-collapse> -->
+                   <!-- <div >
+                     <el-collapse-transition accordion @change="messageClean">
+                       <div v-show="show">
+                         <div class="transition-box" v-for="msg in list" :key="msg.index" @click="msgDetail(msg.messageId)">
+                              <h5>{{msg.senderName}} <span v-if="msg.isRead == 0">未读信息</span></h5>
+                              <p>{{msg.abstract}}</p>
+                         </div>
+                         <div class="crs-pages">
+                            <el-pagination
+                             @current-change="handleCurrentChange"
+                             :current-page="page" :page-size="pagesize"  :total="total"  layout="total, prev, pager, next"></el-pagination>
+                        </div>
+                       </div>
+                     </el-collapse-transition>
+                   </div> -->
+                <!-- <el-button type="text" size="small" @click="messageCleanAll">全部已读</el-button> -->
+                <a  href="#/messageMent" ><span slot="label">系统消息 <b v-if="Messagenum >= 0 || unReadNum >= 0"  name class="item_message" >{{Number(Messagenum) + Number(unReadNum)}}</b></span>
+                    <!-- <span v-if="messages.length > 0">({{ messages.length }})</span> -->
+                </a>
+            <!-- </el-popover> -->
+		</div>
+        <el-dialog
+        title="消息详情"
+        :visible.sync="centerDialogVisible"
+        width="60%"
+        left>
+        <h3>发信人:{{detail.senderName}}</h3>
+        <p>内容:{{detail.abstract}}</p>
+        <div  class="btns"  style="text-align:right;width: 100%;">
+          <el-button type="primary" @click="centerDialogVisible = false">关闭</el-button>
+        </div>
+      </el-dialog>
+		<h1 :style="{'backgroundImage': 'url('+ image.logo +')',backgroundRepeat:'no-repeat',backgroundPosition:'0 0'}">{{ image.title }}</h1>
+		<div class="line"></div>
+		<el-menu
+		    :default-active="$route.path"
+		    class="crs-menu"
+		    mode="horizontal"
+		    @select="pageJump"
+            router
+		    _background-color="#545c64"
+		    _text-color="#fff"
+		    _active-text-color="#ffd04b"
+
+		    background-color="#ecf1f6"
+		    text-color="#333"
+		    active-text-color="#e74844">
+		    <el-submenu :key="item.index" :index="item.index" v-for="item in menu.L1" v-if="menu.L2[item.index]">
+		        <template slot="title">{{ item.title }}</template>
+		        <el-submenu :index="subItem.path" :key="subItem.path" v-for="subItem in menu.L2[item.index]" v-if="JSON.stringify(subItem.children) != '{}'">
+                    <template slot="title">{{ subItem.title }}</template>
+                    <el-menu-item :index="option.path" :key="option.path"  v-for="option in subItem.children" >
+                        <template slot="title">{{ option.title }}</template>
+                    </el-menu-item>
+                </el-submenu>
+                <el-menu-item :key="subItem.index" :index="subItem.path" v-else>{{ subItem.title }}</el-menu-item>
+		    </el-submenu>
+
+		    <el-menu-item :key="item.index" :index="item.index" v-else>{{ item.title }}</el-menu-item>
+		</el-menu>
+	</div>
+
+	<div class="crs-body">
+	    <router-view></router-view>
+	</div>
+    <!-- <div class="crs-footer">
+        {{ enterprise.name }}公司
+    </div> -->
+</div>
+
+
+
+<script>
+var app = new Vue({
+	el: "#app",
+	router: router,
+	data: {},
+	computed: {},
+	methods: {
+      handleCurrentChange: function (page) {
+        console.log('kkk')
+        this.page = page;
+        console.log(this.page); //点击第几页
+        this.reloadList()
+      },
+  		pageJump(name, keyPath) {
+        console.log('kkk0')
+  			//  console.log(name, keyPath);
+  		},
+      updatePasswordPop: function(formName){
+          console.log('kkk1')
+          var _this = this;
+          _this.passwords.show = true;
+          this.$refs[formName] && this.$refs[formName].resetFields();
+      },
+      updatePassword: function(formName){
+          console.log('kkk2')
+          var _this = this;
+          _this.$refs[formName].validate((valid) => {
+        	if (!valid) {
+                  return;
+              }
+
+
+              var userInfo = _this.passwords.model;
+                  userInfo.userId = _this.user.id;
+              console.log('passwords', userInfo);
+
+              window.Services.Account.updatePassword(function(result){
+                  if(result.code == 'ok'){
+                      alert('密码修改成功')
+                      _this.passwords.show = false;
+                  }else{
+                      alert(result.message);
+                  }
+              }, userInfo);
+          });
+      },
+      logout: function(){
+        console.log('kkk3')
+        /*
+          window.Services.Account.logout(function(){
+              var link = location.href.replace("/main.html", "/index.html");
+              location.href = link.split('#')[0];
+          });
+        */
+      },   
+    },
+	mounted: function(){
+      console.log('kkk4')
+    /*
+      var _this = this;
+      // setTimeout(msgSetTime,1000*60*1);
+
+      var cache = CRS.cache;
+
+      var url = location.href.split('#')[0];
+      var code = CRS.getPara(url, 'code');
+
+      _this.image = cache.get('getlogo') || {}
+      
+      _this.enterprise.code = code;
+      _this.user = cache.get('userInfo') || {};
+      
+    	if("undefined" == typeof _this.enterprise.fullname){
+    		_this.enterprise.fullname = '';
+    	}
+      window.document.title = _this.enterprise.fullname +' ' + _this.enterprise.title;
+      */
+	}
+});
+</script>
+
+</body>
+</html>
